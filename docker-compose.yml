@@ -24,7 +24,7 @@ services:
 
   # ── Servicio Base de Datos (MySQL 8.0) ──
   database:
-    image: mysql:8.0                # imagen oficial de MySQL
+    image: mysql:5.7               # imagen oficial de MySQL
     container_name: backend_db
     restart: always
     environment:
