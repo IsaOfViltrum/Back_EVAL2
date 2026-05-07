@@ -13,7 +13,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Instala SOLO dependencias de producción
-RUN npm ci --omit=dev
+RUN npm install --omit=dev
 
 # ══════════════════════════════════════════
 # STAGE 2: Runtime
