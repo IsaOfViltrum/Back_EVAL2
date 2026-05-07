@@ -4,7 +4,7 @@ services:
 
   # ── Servicio Backend (Node.js + Express) ──
   backend:
-    image: isaofviltrum/back-eval2:lates                      
+    image: isaofviltrum/back-eval2:latest     # imagen construida y subida a Docker Hub                 
     container_name: backend_app
     restart: always                 # se reinicia si falla
     ports:
