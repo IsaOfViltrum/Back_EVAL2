@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+
+  # ── Servicio Backend (Node.js + Express) ──
+  backend:
+    build: .                        # usa el Dockerfile de esta carpeta
+    container_name: backend_app
+    restart: always                 # se reinicia si falla
+    ports:
+      - "3000:3000"                 # puerto_host:puerto_contenedor
+    environment:
+      - PORT=3000
+      - DB_HOST=database            # nombre del servicio MySQL de abajo
+      - DB_PORT=3306
+      - DB_USER=${DB_USER}          # viene del archivo .env
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=proyecto_db
+    depends_on:
+      database:
+        condition: service_healthy  # espera que MySQL esté listo antes de iniciar
+    networks:
+      - backend_network
+
+  # ── Servicio Base de Datos (MySQL 8.0) ──
+  database:
+    image: mysql:8.0                # imagen oficial de MySQL
+    container_name: backend_db
+    restart: always
+    environment:
+      - MYSQL_DATABASE=proyecto_db
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+    volumes:
+      # Named volume: la data persiste aunque el contenedor se elimine o reinicie
+      # Elegimos named volume sobre bind mount porque es más portable
+      # y no depende de rutas del sistema operativo del host
+      - db_data:/var/lib/mysql
+      # Al iniciar por primera vez, MySQL ejecuta este SQL automáticamente
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend_network
+
+# ── Volumen nombrado (named volume) ──
+# La data de MySQL sobrevive reinicios y eliminación del contenedor
+volumes:
+  db_data:
+    driver: local
+
+# ── Red interna entre backend y BD ──
+networks:
+  backend_network:
+    driver: bridge

@@ -1,0 +1,9 @@
+node_modules
+npm-debug.log
+.env
+.git
+.gitignore
+*.md
+
+#Esto evita que Docker copie archivos innecesarios a la imagen
+#haciéndola más liviana.

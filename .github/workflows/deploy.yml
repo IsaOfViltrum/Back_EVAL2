@@ -1,0 +1,44 @@
+name: CI/CD Backend — Build → Push → Deploy
+
+on:
+  push:
+    branches:
+      - deploy
+
+jobs:
+  build-push-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: 📥 Checkout código
+        uses: actions/checkout@v3
+
+      - name: 🔐 Login a Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: 🐳 Build y Push imagen
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/back-eval2:latest
+
+      - name: 🚀 Deploy en EC2 Backend
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_BACKEND_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/ec2-user/backend
+            echo "DB_USER=${{ secrets.DB_USER }}" > .env
+            echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+            echo "DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}" >> .env
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/back-eval2:latest
+            docker-compose down
+            docker-compose up -d
+            docker image prune -f
