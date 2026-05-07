@@ -4,7 +4,7 @@ services:
 
   # ── Servicio Backend (Node.js + Express) ──
   backend:
-    build: .                        # usa el Dockerfile de esta carpeta
+    image: isaofviltrum/back-eval2:lates                      
     container_name: backend_app
     restart: always                 # se reinicia si falla
     ports:
