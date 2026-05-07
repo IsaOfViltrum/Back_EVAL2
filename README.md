@@ -1,100 +1,51 @@
-# Backend - API REST con Node.js y Express
+# Backend — API REST Node.js + Express + MySQL
 
 ## Descripción
-Backend API desarrollado en JavaScript con Node.js y Express framework. Proporciona endpoints RESTful para la gestión de usuarios con conexión a base de datos MySQL.
+API REST para gestión de usuarios desarrollada con Node.js y Express,
+desplegada en contenedores Docker sobre AWS EC2 para Innovatech Chile.
 
-## Versiones y Herramientas Requeridas
+## Tecnologías
+- Node.js 18 + Express
+- MySQL 5.7
+- Docker (multi-stage build)
+- GitHub Actions (CI/CD)
+- AWS EC2
 
-### Lenguajes y Runtime
-- **Node.js**: Versión 18.0.0 o superior
-- **npm**: Versión 8.0.0 o superior (incluido con Node.js)
+## Requisitos locales
+- Docker Desktop
+- Docker Compose
 
-### Dependencias Principales
-- **express**: ^4.18.2 - Framework web para Node.js
-- **cors**: ^2.8.5 - Middleware para habilitar CORS
-- **mysql2**: ^3.6.0 - Driver de MySQL para Node.js
-- **dotenv**: ^16.3.1 - Manejo de variables de entorno
-
-### Dependencias de Desarrollo
-- **nodemon**: ^3.0.1 - Para desarrollo con recarga automática
-
-## Instalación
-
-```bash
-# Instalar dependencias
-npm install
-
-# Instalar dependencias de desarrollo
-npm install --save-dev nodemon
-```
-
-## Configuración
-
-1. Copiar el archivo de variables de entorno:
-```bash
-cp .env.example .env
-```
-
-2. Editar el archivo `.env` con las credenciales de tu base de datos MySQL:
-```
+## Variables de entorno
+Copia `.env.example` como `.env` y completa:
+```env
 PORT=3000
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=tu_contraseña
-DB_NAME=proyecto_db
+DB_HOST=database
 DB_PORT=3306
+DB_USER=appuser
+DB_PASSWORD=tu_password
+DB_ROOT_PASSWORD=tu_root_password
+DB_NAME=proyecto_db
 ```
 
-## Ejecución
-
+## Cómo ejecutar localmente
 ```bash
-# Para producción
-npm start
-
-# Para desarrollo (con recarga automática)
-npm run dev
+docker-compose up --build
+# API disponible en http://localhost:3000
 ```
 
-## Endpoints de la API
+## Endpoints disponibles
+- GET    /api/usuarios       → Lista todos los usuarios
+- POST   /api/usuarios       → Crea un usuario
+- PUT    /api/usuarios/:id   → Actualiza un usuario
+- DELETE /api/usuarios/:id   → Elimina un usuario
 
-### Usuarios
-- `GET /api/usuarios` - Obtener todos los usuarios
-- `POST /api/usuarios` - Crear un nuevo usuario
-- `PUT /api/usuarios/:id` - Actualizar un usuario existente
-- `DELETE /api/usuarios/:id` - Eliminar un usuario
+## Pipeline CI/CD
+- Trigger: push a rama `deploy`
+- Build imagen Docker → Push a Docker Hub → Deploy en EC2
 
-### Ejemplo de uso
-```bash
-# Obtener todos los usuarios
-curl http://localhost:3000/api/usuarios
-
-# Crear un nuevo usuario
-curl -X POST http://localhost:3000/api/usuarios \
-  -H "Content-Type: application/json" \
-  -d '{"nombre":"Juan Pérez","email":"juan@example.com","edad":25}'
-```
-
-## Puertos Requeridos
-
-### Para funcionamiento en contenedor:
-- **Puerto 3000**: Puerto del servidor backend (HTTP)
-- **Puerto 3306**: Puerto de conexión a base de datos MySQL (externo)
-
-### Explicación de puertos:
-- **3000**: Es el puerto donde escucha el servidor Express para recibir peticiones HTTP
-- **3306**: Es el puerto estándar para comunicación con el servidor MySQL
-
-## Estructura del Proyecto
-```
-backend/
-├── server.js          # Archivo principal del servidor
-├── package.json       # Configuración de dependencias
-├── .env.example       # Ejemplo de variables de entorno
-├── .env              # Variables de entorno (crear manualmente)
-└── README.md         # Este archivo
-```
-
-## Notas Importantes
-- Asegúrate de tener MySQL instalado y corriendo antes de iniciar el backend
-- La base de datos `proyecto_db` debe existir (ver proyecto `database/`)
-- El servidor se reiniciará automáticamente en modo desarrollo si usas `npm run dev`
+## Decisiones técnicas
+- **Multi-stage build**: reduce el tamaño de la imagen final
+- **Usuario no root**: seguridad de mínimo privilegio
+- **Named volume**: la data de MySQL persiste entre reinicios
+- **Rama deploy**: separa desarrollo de producción
+- **MySQL 5.7**: compatible con t3.micro de AWS Academy
